@@ -1,0 +1,85 @@
+import mysql.connector
+
+conexao = mysql.connector.connect(
+    host=,
+    user=,
+    password=,
+    database=
+)
+cursor = conexao.cursor()
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS funcionarios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100),
+    cargo VARCHAR(100),
+    salario DECIMAL(10,2)
+)
+""")
+conexao.commit()
+
+def adicionar_funcionario(nome, cargo, salario):
+    sql = "INSERT INTO funcionarios (nome, cargo, salario) VALUES (%s, %s, %s)"
+    valores = (nome, cargo, salario)
+    cursor.execute(sql, valores)
+    conexao.commit()
+    print("Funcionário adicionado com sucesso!")
+
+def listar_funcionarios():
+    cursor.execute("SELECT * FROM funcionarios")
+    resultados = cursor.fetchall()
+    if not resultados:
+        print("Nenhum funcionário cadastrado.")
+        return
+    for f in resultados:
+        print(f"ID: {f[0]} | Nome: {f[1]} | Cargo: {f[2]} | Salário: R${f[3]}")
+
+def buscar_por_nome(nome):
+    sql = "SELECT * FROM funcionarios WHERE nome LIKE %s"
+    cursor.execute(sql, (f"%{nome}%",))
+    resultados = cursor.fetchall()
+    if not resultados:
+        print("Funcionário não encontrado.")
+        return
+    for f in resultados:
+        print(f"ID: {f[0]} | Nome: {f[1]} | Cargo: {f[2]} | Salário: R${f[3]}")
+
+def calcular_media_salarial():
+    cursor.execute("SELECT AVG(salario) FROM funcionarios")
+    media = cursor.fetchone()[0]
+    if media:
+        print(f"Média salarial: R${media:.2f}")
+    else:
+        print("Nenhum funcionário cadastrado para calcular a média.")
+
+def menu():
+    while True:
+        print("\n1. Adicionar funcionário")
+        print("2. Listar funcionários")
+        print("3. Buscar funcionário por nome")
+        print("4. Calcular média salarial")
+        print("5. Sair")
+
+        opcao = input("Escolha uma opção: ")
+
+        if opcao == "1":
+            nome = input("Nome: ")
+            cargo = input("Cargo: ")
+            salario = float(input("Salário: "))
+            adicionar_funcionario(nome, cargo, salario)
+        elif opcao == "2":
+            listar_funcionarios()
+        elif opcao == "3":
+            nome = input("Nome para buscar: ")
+            buscar_por_nome(nome)
+        elif opcao == "4":
+            calcular_media_salarial()
+        elif opcao == "5":
+            break
+        else:
+            print("Opção inválida.")
+
+if __name__ == "__main__":
+    menu()
+    cursor.close()
+    conexao.close()
